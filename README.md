@@ -9,6 +9,9 @@ Rails 8.0.2 を使用した Web アプリケーションです。
 
 ## セットアップ
 
+前提として、Docker Desktop がインストールされている必要があります。
+https://www.docker.com/ja-jp/products/docker-desktop/
+
 ### 1. リポジトリのクローン
 
 ```bash
