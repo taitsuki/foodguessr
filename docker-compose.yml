@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  # PostgreSQLデータベース
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: foodguessr_development
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Railsアプリケーション
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/foodguessr_development
+      RAILS_ENV: development
+      RAILS_SERVE_STATIC_FILES: "true"
+      BUNDLE_PATH: "/usr/local/bundle" # bundleのパスを明示的に追加
+    volumes:
+      - .:/app
+      - bundle_cache:/usr/local/bundle
+    depends_on:
+      db:
+        condition: service_healthy
+    # 毎回起動時にPIDファイルを自動的に削除。bundleのインストールとrails serverの立ち上げを追加
+    command: sh -c "rm -f tmp/pids/server.pid && bundle install && bundle exec rails server -b 0.0.0.0"
+    stdin_open: true
+    tty: true
+
+  # Redis（必要に応じて）
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  bundle_cache:
+  redis_data:
