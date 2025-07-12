@@ -12,7 +12,7 @@ Rails 8.0.2 を使用した Web アプリケーションです。
 ### 1. リポジトリのクローン
 
 ```bash
-git clone <repository-url>
+git clone git@github.com:taitsuki/foodguessr.git
 cd foodguessr
 ```
 
