@@ -27,15 +27,18 @@ services:
       DATABASE_URL: postgresql://postgres:password@db:5432/foodguessr_development
       RAILS_ENV: development
       RAILS_SERVE_STATIC_FILES: "true"
-      BUNDLE_PATH: "/usr/local/bundle" # bundleのパスを明示的に追加
+      BUNDLE_PATH: "/usr/local/bundle"
     volumes:
       - .:/app
       - bundle_cache:/usr/local/bundle
     depends_on:
       db:
         condition: service_healthy
-    # 毎回起動時にPIDファイルを自動的に削除。bundleのインストールとrails serverの立ち上げを追加
-    command: sh -c "rm -f tmp/pids/server.pid && bundle install && bundle exec rails server -b 0.0.0.0"
+    # --- ここを修正 ---
+    # `bin/dev` を実行するように変更。
+    # これにより、Procfile.devに書かれたwebとjsのプロセスが両方起動します。
+    command: ["./bin/dev"]
+    # --- 修正ここまで ---
     stdin_open: true
     tty: true
 
@@ -51,3 +54,4 @@ volumes:
   postgres_data:
   bundle_cache:
   redis_data:
+
