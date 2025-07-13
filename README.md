@@ -1,127 +1,106 @@
-# FoodGuessr
+FoodGuessr
+Rails 8.0.2 と esbuild を使用した Web アプリケーションです。
 
-Rails 8.0.2 を使用した Web アプリケーションです。
+必要な環境
+Docker
 
-## 必要な環境
+Docker Compose
 
-- Docker
-- Docker Compose
-
-## セットアップ
-
+セットアップ
 前提として、Docker Desktop がインストールされている必要があります。
 https://www.docker.com/ja-jp/products/docker-desktop/
 
-### 1. リポジトリのクローン
-
-```bash
+1. リポジトリのクローン
 git clone git@github.com:taitsuki/foodguessr.git
 cd foodguessr
-```
 
-### 2. アプリケーションの起動
+2. アプリケーションの起動
+以下のコマンドで、RailsサーバーとJavaScriptのビルドプロセスが同時に起動します。
 
-```bash
 # 初回起動（ビルド含む）
 docker-compose up --build
 
 # 2回目以降の起動
 docker-compose up
-```
 
-### 3. データベースのセットアップ（初回のみ）
+3. データベースのセットアップ（初回のみ）
+アプリケーションとは別のターミナルを開いて、以下のコマンドを実行してください。
 
-```bash
-# 別ターミナルで実行
-docker-compose run web bundle exec rails db:create db:migrate
-```
+docker-compose run --rm web bundle exec rails db:create db:migrate
 
-### 4. アプリケーションにアクセス
+4. アプリケーションにアクセス
+ブラウザで http://localhost:3000 にアクセス
 
-ブラウザで `http://localhost:3000` にアクセス
-
-## 開発
-
-### アプリケーションの停止
-
-```bash
+開発
+アプリケーションの停止
 docker-compose down
-```
 
-### ログの確認
+ログの確認
+docker-compose up を実行しているターミナルに、Rails(web)とJavaScript(js)の両方のログが出力されます。
 
-```bash
-# 全サービスのログ
-docker-compose logs
+Rails関連のコマンド実行
+Railsコンソールやデータベースコンソールなど、単発のコマンドを実行する場合は、別のターミナルを開いて以下のコマンドを実行してください。
 
-# Railsアプリケーションのログのみ
-docker-compose logs -f web
-```
+# Rails コンソール
+docker-compose run --rm web bundle exec rails console
 
-### Rails コンソール
+# データベースコンソール
+docker-compose run --rm web bundle exec rails dbconsole
 
-```bash
-docker-compose run web bundle exec rails console
-```
+# テストの実行
+docker-compose run --rm web bundle exec rails test
 
-### データベースコンソール
+サービス構成
+Rails: http://localhost:3000
 
-```bash
-docker-compose run web bundle exec rails dbconsole
-```
+PostgreSQL: localhost:5432
 
-### テストの実行
+Redis: localhost:6379
 
-```bash
-docker-compose run web bundle exec rails test
-```
+トラブルシューティング
+PID ファイルエラーが発生した場合
+# docker-compose run web rm -f tmp/pids/server.pid
+# docker-compose up
+# (現在は bin/dev を使うため、このエラーは発生しにくくなっています)
 
-## サービス構成
+Gem の依存関係エラーが発生した場合
+docker-compose build --no-cache
 
-- **Rails**: `http://localhost:3000`
-- **PostgreSQL**: `localhost:5432`
-- **Redis**: `localhost:6379`
+JavaScript の依存関係エラーが発生した場合
+rm -rf node_modules package-lock.json
+docker-compose run --rm web npm install
 
-## トラブルシューティング
+技術スタック
+Ruby: 3.4.4
 
-### PID ファイルエラーが発生した場合
+Rails: 8.0.2
 
-```bash
-docker-compose run web rm -f tmp/pids/server.pid
-docker-compose up
-```
+JavaScript: esbuild, MSW (Mock Service Worker)
 
-### Gem の依存関係エラーが発生した場合
+データベース: PostgreSQL 15
 
-```bash
-docker-compose down
-docker-compose up --build
-```
+キャッシュ: Redis 7
 
-## 技術スタック
+Web サーバー: Puma
 
-- **Ruby**: 3.4.4
-- **Rails**: 8.0.2
-- **データベース**: PostgreSQL 15
-- **キャッシュ**: Redis 7
-- **Web サーバー**: Puma
+開発チーム向け
+初回セットアップ時の注意点
+Docker と Docker Compose がインストールされていることを確認
 
-## 開発チーム向け
+初回起動時はビルドに時間がかかります（5-10 分程度）
 
-### 初回セットアップ時の注意点
+データベースのマイグレーションは、別のターミナルから手動で実行が必要です。
 
-1. Docker と Docker Compose がインストールされていることを確認
-2. 初回起動時はビルドに時間がかかります（5-10 分程度）
-3. データベースのマイグレーションは手動で実行が必要
+日常的な開発フロー
+docker-compose up でアプリケーションを起動します。
 
-### 日常的な開発フロー
+コードを編集すると、RailsとJavaScriptの両方が自動でリロード・再ビルドされます。
 
-1. `docker-compose up` でアプリケーション起動
-2. コードを編集（ホットリロード対応）
-3. 必要に応じて `docker-compose down` で停止
+必要に応じて docker-compose down で停止します。
 
-### ファイルの変更について
+ファイルの変更について
+アプリケーションコード (Ruby/JS): 自動でリロード・再ビルドされます。
 
-- アプリケーションコードはホットリロード対応
-- Gemfile の変更時は `docker-compose up --build` が必要
-- データベース設定の変更時はコンテナの再起動が必要
+Gemfile の変更時: docker-compose build を実行して、Dockerイメージを再構築してください。
+
+package.json の変更時: docker-compose run --rm web npm install を実行した後、docker-compose up で再起動してください。
