@@ -33,7 +33,7 @@ docker-compose up
 
 ```bash
 # 別ターミナルで実行
-docker-compose run web bundle exec rails db:create db:migrate
+docker-compose exec web bundle exec rails db:create db:migrate
 ```
 
 ### 4. アプリケーションにアクセス
@@ -61,7 +61,7 @@ docker-compose logs -f web
 ### Rails コンソール
 
 ```bash
-docker-compose run web bundle exec rails console
+docker-compose exec web bundle exec rails console
 ```
 
 ### データベースコンソール
@@ -73,7 +73,23 @@ docker-compose run web bundle exec rails dbconsole
 ### テストの実行
 
 ```bash
-docker-compose run web bundle exec rails test
+docker-compose exec web bundle exec rails test
+```
+
+### よく使うコマンド
+
+```bash
+# マイグレーション
+docker-compose exec web bundle exec rails db:migrate
+
+# ルート確認
+docker-compose exec web bundle exec rails routes
+
+# ファイル生成
+docker-compose exec web bundle exec rails generate controller Api::V1::Users
+
+# データベースリセット
+docker-compose exec web bundle exec rails db:reset
 ```
 
 ## サービス構成
@@ -81,6 +97,11 @@ docker-compose run web bundle exec rails test
 - **Rails**: `http://localhost:3000`
 - **PostgreSQL**: `localhost:5432`
 - **Redis**: `localhost:6379`
+
+## API エンドポイント
+
+- **ジャンル一覧**: `GET /api/v1/food_genres`
+- **ジャンル詳細**: `GET /api/v1/food_genres/:id`
 
 ## トラブルシューティング
 
