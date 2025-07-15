@@ -9,8 +9,7 @@ Rails 8.0.2 と esbuild を使用した Web アプリケーションです。
 
 ## セットアップ
 
-前提として、Docker Desktop がインストールされている必要があります。
-https://www.docker.com/ja-jp/products/docker-desktop/
+前提として、[Docker Desktop](https://www.docker.com/ja-jp/products/docker-desktop/) がインストールされている必要があります。
 
 ### 1. リポジトリのクローン
 
