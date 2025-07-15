@@ -39,6 +39,19 @@ docker-compose up
 docker-compose run --rm web bundle exec rails db:create db:migrate
 ```
 
+以下のコマンドで DB 内にデータを投入できます。
+
+```bash
+# seedの投入
+docker-compose exec web bin/rails db:seed
+
+# rails consoleに入ってDBの確認
+docker-compose exec web bin/rails console
+
+# rails console内で以下を実行
+FoodGenre.all
+```
+
 ### 4\. アプリケーションにアクセス
 
 ブラウザで `http://localhost:3000` にアクセス
@@ -57,6 +70,13 @@ docker-compose down
 
 `docker-compose up` を実行しているターミナルに、Rails(`web`)と JavaScript(`js`)の両方のログが出力されます。
 
+### Docker 内でのコマンド実行
+
+```bash
+# webコンテナに入る
+docker-compose exec web bash
+```
+
 ### Rails 関連のコマンド実行
 
 Rails コンソールやデータベースコンソールなど、単発のコマンドを実行する場合は、**別のターミナルを開いて**以下のコマンドを実行してください。
@@ -72,11 +92,21 @@ docker-compose run --rm web bundle exec rails dbconsole
 docker-compose run --rm web bundle exec rails test
 ```
 
+```bash
+# Rails コンソールは以下コマンドでも起動可能
+docker-compose exec web bin/rails console
+```
+
 ## サービス構成
 
 - **Rails**: `http://localhost:3000`
 - **PostgreSQL**: `localhost:5432`
 - **Redis**: `localhost:6379`
+
+## API エンドポイント
+
+- **ジャンル一覧**: `GET /api/v1/food_genres`
+- **ジャンル詳細**: `GET /api/v1/food_genres/:id`
 
 ## トラブルシューティング
 
