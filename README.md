@@ -144,7 +144,8 @@ docker-compose exec web bin/rails console
 
 - **ジャンル一覧**: `GET /api/v1/food_genres`
 - **ジャンル詳細**: `GET /api/v1/food_genres/:id`
-- **ジャンルのランダム取得**: `GET /api/v1/food_genres/random`
+- **ジャンルのランダム取得(1 つ)**: `GET /api/v1/food_genres/random`
+- **ジャンルのランダム取得(2 つ)**: `GET /api/v1/food_genres/two_random`
 
 ## トラブルシューティング
 
