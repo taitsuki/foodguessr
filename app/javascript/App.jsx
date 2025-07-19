@@ -1,5 +1,5 @@
 // app/javascript/App.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChakraProvider,
   Button,
@@ -7,6 +7,7 @@ import {
   Heading,
   Text,
   VStack,
+  HStack,
   Alert,
   AlertIcon,
   AlertTitle,
@@ -14,23 +15,22 @@ import {
 } from "@chakra-ui/react";
 
 const App = () => {
-  const [genre, setGenre] = useState(null);
+  const [pair, setPair] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchRandomGenre = async () => {
+  const fetchPair = async () => {
     setLoading(true);
     setError(null);
-    setGenre(null);
 
     try {
-      const response = await fetch("/api/v1/food_genres/random");
+      const response = await fetch("/api/v1/food_genres/two_random");
       const data = await response.json();
 
-      if (data.name) {
-        setGenre(data);
+      if (Array.isArray(data) && data.length === 2) {
+        setPair(data);
       } else {
-        setError("ジャンルが見つかりません");
+        setError("ジャンルが取得できませんでした");
       }
     } catch (err) {
       console.error("Error:", err);
@@ -40,23 +40,26 @@ const App = () => {
     }
   };
 
+  // 初回表示時に取得
+  useEffect(() => {
+    fetchPair();
+  }, []);
+
+  // ボタン選択時に次の2択を取得
+  const handleSelect = (selectedGenre) => {
+    // 必要なら選択履歴やスコア管理もここで
+    fetchPair();
+  };
+
   return (
     <ChakraProvider>
       <Box p={6} maxW="600px" mx="auto">
         <VStack spacing={6} align="stretch">
           <Heading size="lg" textAlign="center">
-            FoodGuessr
+            外食何食べる？
           </Heading>
 
-          <Button
-            colorScheme="teal"
-            size="lg"
-            onClick={fetchRandomGenre}
-            isLoading={loading}
-            loadingText="読み込み中..."
-          >
-            ランダムジャンル表示
-          </Button>
+          {loading && <Text>読み込み中...</Text>}
 
           {error && (
             <Alert status="error">
@@ -66,24 +69,34 @@ const App = () => {
             </Alert>
           )}
 
-          {genre && (
-            <Box
-              p={6}
-              bg="blue.50"
-              borderRadius="lg"
-              border="1px"
-              borderColor="blue.200"
-              shadow="md"
-            >
-              <Heading size="md" mb={3} color="blue.800">
-                {genre.name}
-              </Heading>
-              {genre.description && (
-                <Text color="blue.700" fontSize="md">
-                  {genre.description}
-                </Text>
-              )}
-            </Box>
+          {!loading && !error && pair.length === 2 && (
+            <HStack spacing={8} justify="center">
+              {pair.map((genre) => (
+                <Button
+                  key={genre.id}
+                  colorScheme="teal"
+                  size="lg"
+                  onClick={() => handleSelect(genre)}
+                  minW="40%"
+                  p={6}
+                >
+                  <VStack>
+                    <Text fontWeight="bold" fontSize="xl">
+                      {genre.name}
+                    </Text>
+                    {genre.description && (
+                      <Text color="gray.600" fontSize="md">
+                        {genre.description}
+                      </Text>
+                    )}
+                  </VStack>
+                </Button>
+              ))}
+            </HStack>
+          )}
+
+          {!loading && !error && pair.length < 2 && (
+            <Text>ジャンルが足りません</Text>
           )}
         </VStack>
       </Box>
