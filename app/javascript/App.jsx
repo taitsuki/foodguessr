@@ -45,7 +45,7 @@ const App = () => {
       <Box p={6} maxW="600px" mx="auto">
         <VStack spacing={6} align="stretch">
           <Heading size="lg" textAlign="center">
-            FoodGuessr
+            外食何食べる？
           </Heading>
 
           <Button
