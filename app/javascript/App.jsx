@@ -15,18 +15,18 @@ import {
   Divider,
   List,
   ListItem,
+  Spinner,
 } from "@chakra-ui/react";
 
 const App = () => {
-  const [pair, setPair] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [history, setHistory] = useState({}); // { [genre.id]: { genre, count } }
+  const [pair, setPair] = useState([]); // 表示するジャンル(2択)
+  const [loading, setLoading] = useState(false); // APIリクエスト中かどうか
+  const [error, setError] = useState(null); // エラーメッセージ
+  const [history, setHistory] = useState({}); // 選択回数を記録するオブジェクト { [genre.id]: { genre, count } }
 
   const fetchPair = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const response = await fetch("/api/v1/food_genres/two_random");
       const data = await response.json();
@@ -89,7 +89,8 @@ const App = () => {
             </Box>
           ) : (
             <>
-              {loading && <Text>読み込み中...</Text>}
+              {/* {loading && <Text>読み込み中...</Text>} */}
+              {loading && <Spinner />}
 
               {error && (
                 <Alert status="error">
@@ -100,29 +101,42 @@ const App = () => {
               )}
 
               {!loading && !error && pair.length === 2 && (
-                <HStack spacing={8} justify="center">
-                  {pair.map((genre) => (
-                    <Button
-                      key={genre.id}
-                      colorScheme="teal"
-                      size="lg"
-                      onClick={() => handleSelect(genre)}
-                      minW="40%"
-                      p={6}
-                    >
-                      <VStack>
-                        <Text fontWeight="bold" fontSize="xl">
-                          {genre.name}
-                        </Text>
-                        {genre.description && (
-                          <Text color="gray.600" fontSize="md">
-                            {genre.description}
+                <>
+                  <HStack spacing={8} justify="center">
+                    {pair.map((genre) => (
+                      <Button
+                        key={genre.id}
+                        colorScheme="teal"
+                        size="lg"
+                        onClick={() => handleSelect(genre)}
+                        minW="40%"
+                        p={6}
+                      >
+                        <VStack>
+                          <Text fontWeight="bold" fontSize="xl">
+                            {genre.name}
                           </Text>
-                        )}
-                      </VStack>
+                          {genre.description && (
+                            <Text color="gray.600" fontSize="md">
+                              {genre.description}
+                            </Text>
+                          )}
+                        </VStack>
+                      </Button>
+                    ))}
+                  </HStack>
+                  {/* ここに「どちらでもない」ボタンを追加 */}
+                  <Box textAlign="center" mt={4}>
+                    <Button
+                      colorScheme="gray"
+                      variant="outline"
+                      size="md"
+                      onClick={fetchPair}
+                    >
+                      どちらでもない
                     </Button>
-                  ))}
-                </HStack>
+                  </Box>
+                </>
               )}
 
               {!loading && !error && pair.length < 2 && (
