@@ -7,7 +7,7 @@ Rails 8.0.2 と esbuild を使用した Web アプリケーションです。
 - Docker
 - Docker Compose
 
-## セットアップ
+## セットアップ(バックエンド編)
 
 前提として、[Docker Desktop](https://www.docker.com/ja-jp/products/docker-desktop/) がインストールされている必要があります。
 
@@ -55,7 +55,45 @@ FoodGenre.all
 
 ブラウザで `http://localhost:3000` にアクセス
 
----
+## セットアップ(フロントエンド編)
+
+### React + Chakra UI の導入
+
+このプロジェクトでは **jsbundling-rails** と **esbuild** を使用して React + Chakra UI を導入しています。
+
+#### 初回セットアップ（新規開発者の場合）
+
+1. **依存関係のインストール**
+
+   ```bash
+   docker-compose exec web npm install
+   ```
+
+2. **Chakra UI 関連パッケージのインストール**
+
+   ```bash
+   docker-compose exec web npm install @chakra-ui/react@2.8.2 @emotion/react@11.11.1 @emotion/styled@11.11.0 framer-motion@latest
+   ```
+
+3. **フロントエンドのビルド**
+   ```bash
+   docker-compose exec web npm run build
+   ```
+
+#### 既存開発者の場合
+
+新しい npm パッケージが追加された場合は、以下を実行してください：
+
+```bash
+docker-compose exec web npm install
+docker-compose exec web npm run build
+```
+
+#### フロントエンドの開発
+
+- **React コンポーネント**: `app/javascript/` 配下に配置
+- **エントリーポイント**: `app/javascript/application.js`
+- **ビルド出力**: `app/assets/builds/` 配下に生成
 
 ## 開発
 
@@ -139,6 +177,19 @@ docker-compose run --rm web bundle install
 ```bash
 rm -rf node_modules package-lock.json
 docker-compose run --rm web npm install
+```
+
+### Chakra UI のエラーが発生した場合
+
+```bash
+# 依存関係を完全にクリア
+docker-compose exec web rm -rf node_modules package-lock.json
+docker-compose exec web npm cache clean --force
+
+# 再インストール
+docker-compose exec web npm install
+docker-compose exec web npm install @chakra-ui/react@2.8.2 @emotion/react@11.11.1 @emotion/styled@11.11.0 framer-motion@latest
+docker-compose exec web npm run build
 ```
 
 ## 技術スタック
