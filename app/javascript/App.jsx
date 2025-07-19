@@ -12,12 +12,16 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
+  Divider,
+  List,
+  ListItem,
 } from "@chakra-ui/react";
 
 const App = () => {
   const [pair, setPair] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [history, setHistory] = useState([]); // 選択履歴
 
   const fetchPair = async () => {
     setLoading(true);
@@ -48,6 +52,7 @@ const App = () => {
   // ボタン選択時に次の2択を取得
   const handleSelect = (selectedGenre) => {
     // 必要なら選択履歴やスコア管理もここで
+    setHistory([...history, selectedGenre]);
     fetchPair();
   };
 
@@ -97,6 +102,26 @@ const App = () => {
 
           {!loading && !error && pair.length < 2 && (
             <Text>ジャンルが足りません</Text>
+          )}
+
+          {/* 選択履歴の表示 */}
+          {history.length > 0 && (
+            <>
+              <Divider my={4} />
+              <Heading size="md" mb={2}>
+                選択履歴
+              </Heading>
+              <List spacing={2}>
+                {history.map((genre, idx) => (
+                  <ListItem key={idx}>
+                    <Text>
+                      {idx + 1}. {genre.name}{" "}
+                      {genre.description && `- ${genre.description}`}
+                    </Text>
+                  </ListItem>
+                ))}
+              </List>
+            </>
           )}
         </VStack>
       </Box>
