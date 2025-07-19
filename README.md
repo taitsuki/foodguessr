@@ -147,6 +147,72 @@ docker-compose exec web bin/rails console
 - **ジャンルのランダム取得(1 つ)**: `GET /api/v1/food_genres/random`
 - **ジャンルのランダム取得(2 つ)**: `GET /api/v1/food_genres/two_random`
 
+## デプロイ（Render）
+
+このアプリケーションは Render でデプロイすることを想定しています。
+
+### デプロイ構成
+
+1. **PostgreSQL データベース** (Render PostgreSQL)
+   - 専用のPostgreSQLサービス
+   - 自動バックアップ機能
+
+2. **Web サービス** (Render Web Service)
+   - Railsアプリケーション
+   - Dockerコンテナとしてデプロイ
+
+### デプロイ手順
+
+#### 1. Render アカウントの準備
+
+1. [Render](https://render.com/) にアカウントを作成
+2. GitHubリポジトリと連携
+
+#### 2. PostgreSQL データベースの作成
+
+1. Render ダッシュボードで「New +」→「PostgreSQL」
+2. 以下の設定で作成：
+   - **Name**: `foodguessr-db`
+   - **Database**: `foodguessr_production`
+   - **User**: 自動生成
+   - **Region**: 最寄りのリージョン
+
+#### 3. Web サービスの作成
+
+1. Render ダッシュボードで「New +」→「Web Service」
+2. GitHubリポジトリを選択
+3. 以下の設定で作成：
+   - **Name**: `foodguessr`
+   - **Environment**: `Docker`
+   - **Region**: データベースと同じリージョン
+   - **Branch**: `main`
+   - **Root Directory**: 空白（ルートディレクトリ）
+
+#### 4. 環境変数の設定
+
+Web サービスで以下の環境変数を設定：
+
+```
+RAILS_ENV=production
+RAILS_MASTER_KEY=<config/master.keyの内容>
+DATABASE_URL=<PostgreSQLの接続URL>
+RAILS_SERVE_STATIC_FILES=true
+RAILS_LOG_TO_STDOUT=true
+```
+
+#### 5. デプロイの実行
+
+1. 設定完了後、自動的にデプロイが開始
+2. 初回デプロイ時にデータベースマイグレーションが実行される
+3. デプロイ完了後、提供されたURLでアクセス可能
+
+### 本番環境での注意事項
+
+- 静的ファイルは `RAILS_SERVE_STATIC_FILES=true` で配信
+- ログは `RAILS_LOG_TO_STDOUT=true` で標準出力に出力
+- データベース接続は `DATABASE_URL` 環境変数で管理
+- SSLは自動的に有効化される
+
 ## トラブルシューティング
 
 ### PID ファイルエラーが発生した場合
@@ -198,77 +264,73 @@ docker-compose exec web npm run build
 ```bash
 # ブラウザのキャッシュをクリア
 # Chrome: Ctrl+Shift+R (Windows/Linux) または Cmd+Shift+R (Mac)
-# Firefox: Ctrl+F5 (Windows/Linux) または Cmd+Shift+R (Mac)
-
-# ローカルストレージをクリア
-# ブラウザの開発者ツール → Application → Local Storage → 該当サイトを削除
 ```
 
-### 画面が真っ白になる場合
+### Render デプロイ時のエラー
 
-```bash
-# JavaScriptのビルドを再実行
-docker-compose exec web npm run build
+#### データベース接続エラー
 
-# コンテナを再起動
-docker-compose down
-docker-compose up
-```
+1. `DATABASE_URL` 環境変数が正しく設定されているか確認
+2. PostgreSQL サービスが起動しているか確認
+3. データベースマイグレーションが実行されているか確認
+
+#### アセットビルドエラー
+
+1. `npm run build` が正常に実行されるかローカルで確認
+2. `package.json` と `package-lock.json` が最新か確認
+
+#### メモリ不足エラー
+
+1. Render のプランをアップグレード
+2. 不要な依存関係を削除
+3. アセットの最適化を検討
+
+## カラーモード機能
+
+このアプリケーションには以下のカラーモード機能が実装されています：
+
+### 機能概要
+
+- **ダークモード/ライトモード切り替え**: 手動での色テーマ切り替え
+- **システムカラーモード同期**: OSの設定に自動で合わせる
+- **設定の永続化**: ブラウザを閉じても設定が保持される
+- **統一されたUI**: ボタン、テキスト、背景色が一貫したデザイン
+
+### 使用方法
+
+1. **設定ボタン**: 画面右上の設定アイコンをタップ
+2. **カラーモード選択**:
+   - **システム**: OSの設定に合わせる（推奨）
+   - **ライト**: 常にライトモード
+   - **ダーク**: 常にダークモード
+
+### 技術仕様
+
+- **状態管理**: React useState + localStorage
+- **システム検知**: `prefers-color-scheme` メディアクエリ
+- **永続化**: localStorage API
+- **UI ライブラリ**: Chakra UI + Framer Motion
+
+### トラブルシューティング
+
+#### カラーモードが切り替わらない場合
+
+1. ブラウザのキャッシュをクリア
+2. 設定を「システム」に戻してから再選択
+3. ブラウザの開発者ツールでlocalStorageを確認
+
+#### システムカラーモードが検知されない場合
+
+1. OSのカラーモード設定を確認
+2. ブラウザの設定でカラーモードが無効になっていないか確認
+3. 一度「ライト」または「ダーク」に設定してから「システム」に戻す
 
 ## 技術スタック
 
-- **Ruby**: 3.4.4
-- **Rails**: 8.0.2
-- **JavaScript**: esbuild, MSW (Mock Service Worker)
-- **データベース**: PostgreSQL 15
-- **キャッシュ**: Redis 7
-- **Web サーバー**: Puma
-- **フロントエンド**: React, Chakra UI, Framer Motion
-
-## 機能
-
-### カラーモード機能
-
-アプリケーションはダークモードとライトモードの切り替えに対応しています。
-
-#### カラーモードの設定方法
-
-1. **設定ボタン**: 画面右上の設定アイコンをクリック
-2. **システムモード**: OSの設定に合わせて自動でカラーモードが切り替わります
-3. **手動モード**: 「ライト」または「ダーク」を選択して手動で切り替え
-
-#### 機能の特徴
-
-- **システムカラーモードの自動検知**: OSの設定（ダークモード/ライトモード）を自動で検知
-- **設定の永続化**: 選択したカラーモードはローカルストレージに保存され、ページをリロードしても維持されます
-- **統一されたUI**: すべてのUI要素（ボタン、テキスト、背景）がカラーモードに応じて一貫して切り替わります
-- **タッチ操作の最適化**: ボタンタップ時の文字選択を防止し、スムーズな操作感を実現
-
-### 外食ジャンル選択機能
-
-- **2択選択**: 2つのジャンルから選択
-- **選択履歴**: 選択したジャンルと回数を記録・表示
-- **推奨機能**: 20回選択後に最も選ばれたジャンルを推奨
-- **リセット機能**: 「もう一度」ボタンで選択履歴をリセット
-
-## 開発チーム向け
-
-### 初回セットアップ時の注意点
-
-1.  Docker と Docker Compose がインストールされていることを確認
-2.  初回起動時はビルドに時間がかかります（5-10 分程度）
-3.  データベースのマイグレーションは、別のターミナルから手動で実行が必要です。
-
-### 日常的な開発フロー
-
-1.  `docker-compose up` でアプリケーションを起動します。
-2.  コードを編集すると、Rails と JavaScript の両方が自動でリロード・再ビルドされます。
-3.  必要に応じて `docker-compose down` で停止します。
-
-### ファイルの変更について
-
-- **アプリケーションコード (Ruby/JS)**: 自動でリロード・再ビルドされます。
-- **`Gemfile` の変更時**: `docker-compose build` を実行して、Docker イメージを再構築してください。
-- **`package.json` の変更時**: `docker-compose run --rm web npm install` を実行した後、`docker-compose up` で再起動してください。
-
-<!-- end list -->
+- **バックエンド**: Rails 8.0.2
+- **フロントエンド**: React + Chakra UI + Framer Motion
+- **データベース**: PostgreSQL
+- **アセットビルド**: esbuild
+- **コンテナ**: Docker
+- **デプロイ**: Render
+- **開発環境**: Docker Compose

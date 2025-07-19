@@ -20,14 +20,28 @@ COPY Gemfile.lock ./
 RUN gem install bundler
 RUN bundle install
 
+# package.jsonとpackage-lock.jsonをコピー
+COPY package.json ./
+COPY package-lock.json ./
+
+# npmパッケージをインストール
+RUN npm install
+
 # アプリケーションのソースコードをコピー
 COPY . .
+
+# 本番環境用のアセットをビルド
+RUN npm run build
 
 # Railsの実行可能ファイルを確実にインストール
 RUN bundle exec rails --version
 
+# 本番環境用の設定
+ENV RAILS_ENV=production
+ENV RAILS_SERVE_STATIC_FILES=true
+
 # ポート3000を公開
 EXPOSE 3000
 
-# 開発環境用のコマンド（docker-composeで上書きされる）
+# 本番環境用のコマンド
 CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
