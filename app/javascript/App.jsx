@@ -1,15 +1,11 @@
 // app/javascript/App.jsx
 import React from "react";
+import { ChakraProvider, Button } from "@chakra-ui/react";
 
 const App = () => (
-  <div style={{ padding: "16px" }}>
-    <h1>React Test</h1>
-    <button
-      style={{ backgroundColor: "teal", color: "white", padding: "8px 16px" }}
-    >
-      テストボタン
-    </button>
-  </div>
+  <ChakraProvider>
+    <Button colorScheme="teal">Chakra Button</Button>
+  </ChakraProvider>
 );
 
 export default App;
