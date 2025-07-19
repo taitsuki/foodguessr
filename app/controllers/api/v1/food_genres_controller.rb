@@ -19,4 +19,13 @@ class Api::V1::FoodGenresController < ApplicationController
       render json: { error: "ジャンルが見つかりません" }, status: :not_found
     end
   end
+
+  def two_random
+    food_genres = FoodGenre.order("RANDOM()").limit(2)
+    if food_genres.present?
+      render json: food_genres
+    else
+      render json: { error: "ジャンルが見つかりません" }, status: :not_found
+    end
+  end
 end
