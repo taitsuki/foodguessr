@@ -15,8 +15,9 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "framer-motion": "^12.23.6",
-    "msw": "^1.2.3",
+    "msw": "^2.10.4",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-icons": "^5.5.0"
   }
 }
