@@ -193,6 +193,28 @@ docker-compose exec web npm install @chakra-ui/react@2.8.2 @emotion/react@11.11.
 docker-compose exec web npm run build
 ```
 
+### カラーモードが正しく動作しない場合
+
+```bash
+# ブラウザのキャッシュをクリア
+# Chrome: Ctrl+Shift+R (Windows/Linux) または Cmd+Shift+R (Mac)
+# Firefox: Ctrl+F5 (Windows/Linux) または Cmd+Shift+R (Mac)
+
+# ローカルストレージをクリア
+# ブラウザの開発者ツール → Application → Local Storage → 該当サイトを削除
+```
+
+### 画面が真っ白になる場合
+
+```bash
+# JavaScriptのビルドを再実行
+docker-compose exec web npm run build
+
+# コンテナを再起動
+docker-compose down
+docker-compose up
+```
+
 ## 技術スタック
 
 - **Ruby**: 3.4.4
@@ -201,6 +223,33 @@ docker-compose exec web npm run build
 - **データベース**: PostgreSQL 15
 - **キャッシュ**: Redis 7
 - **Web サーバー**: Puma
+- **フロントエンド**: React, Chakra UI, Framer Motion
+
+## 機能
+
+### カラーモード機能
+
+アプリケーションはダークモードとライトモードの切り替えに対応しています。
+
+#### カラーモードの設定方法
+
+1. **設定ボタン**: 画面右上の設定アイコンをクリック
+2. **システムモード**: OSの設定に合わせて自動でカラーモードが切り替わります
+3. **手動モード**: 「ライト」または「ダーク」を選択して手動で切り替え
+
+#### 機能の特徴
+
+- **システムカラーモードの自動検知**: OSの設定（ダークモード/ライトモード）を自動で検知
+- **設定の永続化**: 選択したカラーモードはローカルストレージに保存され、ページをリロードしても維持されます
+- **統一されたUI**: すべてのUI要素（ボタン、テキスト、背景）がカラーモードに応じて一貫して切り替わります
+- **タッチ操作の最適化**: ボタンタップ時の文字選択を防止し、スムーズな操作感を実現
+
+### 外食ジャンル選択機能
+
+- **2択選択**: 2つのジャンルから選択
+- **選択履歴**: 選択したジャンルと回数を記録・表示
+- **推奨機能**: 20回選択後に最も選ばれたジャンルを推奨
+- **リセット機能**: 「もう一度」ボタンで選択履歴をリセット
 
 ## 開発チーム向け
 
