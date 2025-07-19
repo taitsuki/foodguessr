@@ -21,7 +21,7 @@ const App = () => {
   const [pair, setPair] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [history, setHistory] = useState([]); // 選択履歴
+  const [history, setHistory] = useState({}); // { [genre.id]: { genre, count } }
 
   const fetchPair = async () => {
     setLoading(true);
@@ -49,12 +49,27 @@ const App = () => {
     fetchPair();
   }, []);
 
-  // ボタン選択時に次の2択を取得
+  // ボタン選択時に次の2択を取得し、履歴にカウント
   const handleSelect = (selectedGenre) => {
-    // 必要なら選択履歴やスコア管理もここで
-    setHistory([...history, selectedGenre]);
+    setHistory((prev) => {
+      const prevCount = prev[selectedGenre.id]?.count || 0;
+      return {
+        ...prev,
+        [selectedGenre.id]: {
+          genre: selectedGenre,
+          count: prevCount + 1,
+        },
+      };
+    });
     fetchPair();
   };
+
+  // 履歴を配列に変換して回数順にソート
+  const sortedHistory = Object.values(history).sort(
+    (a, b) => b.count - a.count
+  );
+  const totalCount = sortedHistory.reduce((sum, item) => sum + item.count, 0);
+  const mostSelected = sortedHistory[0]?.genre;
 
   return (
     <ChakraProvider>
@@ -64,63 +79,75 @@ const App = () => {
             外食何食べる？
           </Heading>
 
-          {loading && <Text>読み込み中...</Text>}
-
-          {error && (
-            <Alert status="error">
-              <AlertIcon />
-              <AlertTitle>エラー</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {!loading && !error && pair.length === 2 && (
-            <HStack spacing={8} justify="center">
-              {pair.map((genre) => (
-                <Button
-                  key={genre.id}
-                  colorScheme="teal"
-                  size="lg"
-                  onClick={() => handleSelect(genre)}
-                  minW="40%"
-                  p={6}
-                >
-                  <VStack>
-                    <Text fontWeight="bold" fontSize="xl">
-                      {genre.name}
-                    </Text>
-                    {genre.description && (
-                      <Text color="gray.600" fontSize="md">
-                        {genre.description}
-                      </Text>
-                    )}
-                  </VStack>
-                </Button>
-              ))}
-            </HStack>
-          )}
-
-          {!loading && !error && pair.length < 2 && (
-            <Text>ジャンルが足りません</Text>
-          )}
-
-          {/* 選択履歴の表示 */}
-          {history.length > 0 && (
-            <>
-              <Divider my={4} />
-              <Heading size="md" mb={2}>
-                選択履歴
+          {totalCount >= 20 ? (
+            <Box textAlign="center" mt={10}>
+              <Heading size="lg" color="teal.600">
+                {mostSelected
+                  ? `${mostSelected.name}を食べるのはどうですか？`
+                  : "ジャンルが選ばれていません"}
               </Heading>
-              <List spacing={2}>
-                {history.map((genre, idx) => (
-                  <ListItem key={idx}>
-                    <Text>
-                      {idx + 1}. {genre.name}{" "}
-                      {genre.description && `- ${genre.description}`}
-                    </Text>
-                  </ListItem>
-                ))}
-              </List>
+            </Box>
+          ) : (
+            <>
+              {loading && <Text>読み込み中...</Text>}
+
+              {error && (
+                <Alert status="error">
+                  <AlertIcon />
+                  <AlertTitle>エラー</AlertTitle>
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {!loading && !error && pair.length === 2 && (
+                <HStack spacing={8} justify="center">
+                  {pair.map((genre) => (
+                    <Button
+                      key={genre.id}
+                      colorScheme="teal"
+                      size="lg"
+                      onClick={() => handleSelect(genre)}
+                      minW="40%"
+                      p={6}
+                    >
+                      <VStack>
+                        <Text fontWeight="bold" fontSize="xl">
+                          {genre.name}
+                        </Text>
+                        {genre.description && (
+                          <Text color="gray.600" fontSize="md">
+                            {genre.description}
+                          </Text>
+                        )}
+                      </VStack>
+                    </Button>
+                  ))}
+                </HStack>
+              )}
+
+              {!loading && !error && pair.length < 2 && (
+                <Text>ジャンルが足りません</Text>
+              )}
+
+              {/* 選択履歴の表示（回数順） */}
+              {sortedHistory.length > 0 && (
+                <>
+                  <Divider my={4} />
+                  <Heading size="md" mb={2}>
+                    選択履歴（選ばれた回数順）
+                  </Heading>
+                  <List spacing={2}>
+                    {sortedHistory.map(({ genre, count }) => (
+                      <ListItem key={genre.id}>
+                        <Text>
+                          {genre.name}（{count}回）
+                          {genre.description && ` - ${genre.description}`}
+                        </Text>
+                      </ListItem>
+                    ))}
+                  </List>
+                </>
+              )}
             </>
           )}
         </VStack>
