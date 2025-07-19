@@ -1,26 +1,2 @@
-<h1>Home#index</h1>
-<p>Find me in app/views/home/index.html.erb</p>
-
 <div id="root"></div>
 <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
-
-<button id="random-genre-btn">ランダムジャンル表示</button>
-<div id="random-genre-result"></div>
-
-<script>
-  document.getElementById('random-genre-btn').addEventListener('click', function() {
-    fetch('/api/v1/food_genres/random')
-      .then(response => response.json())
-      .then(data => {
-        if (data.name) {
-          document.getElementById('random-genre-result').innerHTML =
-            `<strong>${data.name}</strong><br>${data.description || ''}`;
-        } else {
-          document.getElementById('random-genre-result').innerText = 'ジャンルが見つかりません';
-        }
-      })
-      .catch(() => {
-        document.getElementById('random-genre-result').innerText = 'エラーが発生しました';
-      });
-  });
-</script>
