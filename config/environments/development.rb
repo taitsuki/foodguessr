@@ -15,7 +15,7 @@ Rails.application.configure do
     config.action_controller.perform_caching = true
     config.action_controller.enable_fragment_cache_logging = true
     config.public_file_server.headers = { "cache-control" => "public, max-age=#{2.days.to_i}" }
-  else
+else
     config.action_controller.perform_caching = false
 end
   # Change to :null_store to avoid any caching.

@@ -11,7 +11,7 @@ end
   def down
     # このマイグレーションは元に戻せない（データ削除のため）
 end
-  private
+private
   def basic_food_genres
     %w[
       寿司 天ぷら そば うどん ラーメン 定食 焼鳥 お好み焼き たこ焼き とんかつ

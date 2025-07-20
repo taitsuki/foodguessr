@@ -13,7 +13,7 @@ end
     food_genre = find_valid_food_genre
     if food_genre
       render json: food_genre
-    else
+else
       render json: { error: '有効なジャンルが見つかりません' }, status: :not_found
 end
 end
@@ -21,11 +21,11 @@ end
     food_genres = find_two_valid_food_genres
     if food_genres.length == 2
       render json: food_genres
-    else
+else
       render json: { error: '有効なジャンルが足りません' }, status: :not_found
 end
 end
-  private
+private
   def find_valid_food_genre
     retry_count = 0
     max_retries = 5
