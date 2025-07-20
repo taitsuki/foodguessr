@@ -7,10 +7,10 @@ class FixInvalidFoodGenres < ActiveRecord::Migration[8.0]
     # データが存在しない場合は、基本的なデータを追加
     return unless FoodGenre.count.zero?
     basic_food_genres.each { |name| FoodGenre.create(name: name) }
-  end
+end
   def down
     # このマイグレーションは元に戻せない（データ削除のため）
-  end
+end
   private
   def basic_food_genres
     %w[
@@ -18,6 +18,6 @@ class FixInvalidFoodGenres < ActiveRecord::Migration[8.0]
       パスタ ピザ ハンバーガー ステーキ ハンバーグ 炒飯 餃子 焼肉 スイーツ パン
       サンドイッチ カレー チキン 丼もの
     ]
-  end
+end
 end
 
