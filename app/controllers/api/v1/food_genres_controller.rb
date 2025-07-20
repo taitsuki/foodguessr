@@ -75,7 +75,7 @@ class Api::V1::FoodGenresController < ApplicationController
     return false if genre.name.blank?
 
     # MyString、MyTextなどの不正なデータをチェック
-    invalid_patterns = [ "MyString", "MyText", "null", "undefined" ]
+    invalid_patterns = ["MyString", "MyText", "null", "undefined"]
     return false if invalid_patterns.any? { |pattern| genre.name.include?(pattern) }
 
     if genre.description.present?
