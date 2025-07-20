@@ -123,6 +123,9 @@ const App = () => {
   const [isSystemMode, setIsSystemMode] = useState(true); // システムモードのチェック状態
   const [manualColorMode, setManualColorMode] = useState("light"); // 手動カラーモード（初期値）
   const [isInitialized, setIsInitialized] = useState(false); // 初期化完了フラグ
+  const [buttonKeys, setButtonKeys] = useState(['left', 'right']); // ボタンの固定キー
+  const [autoRetryCount, setAutoRetryCount] = useState({ left: 0, right: 0 }); // 自動再試行回数
+  const prevPairRef = useRef([]); // 前回のpairの値を保持
 
   // ダークモード対応の色設定
   const bgColor = colorMode === "dark" ? "gray.900" : "white";
@@ -215,15 +218,197 @@ const App = () => {
     }
   };
 
+  // データが有効かどうかをチェックする関数
+  const isValidData = (genre) => {
+    console.log("Checking data validity:", genre);
+    console.log("genre.name type:", typeof genre.name);
+    console.log("genre.name value:", genre.name);
+    console.log("genre.name length:", genre.name ? genre.name.length : 'undefined');
+    
+    if (!genre || !genre.name) {
+      console.log("Invalid: no genre or no name");
+      return false;
+    }
+    
+    // 空文字列のチェック
+    if (genre.name.trim() === '') {
+      console.log("Invalid: name is empty");
+      return false;
+    }
+    
+    // MyString、MyTextなどのデフォルト値や不正なデータをチェック
+    const invalidPatterns = ['MyString', 'MyText'];
+    
+    for (const pattern of invalidPatterns) {
+      if (genre.name.includes(pattern)) {
+        console.log(`Invalid: name contains pattern "${pattern}"`);
+        return false;
+      }
+      if (genre.description && genre.description.includes(pattern)) {
+        console.log(`Invalid: description contains pattern "${pattern}"`);
+        return false;
+      }
+    }
+    
+    console.log("Data is valid:", genre.name);
+    return true;
+  };
+
+  // 個別のボタン用のデータを取得する関数
+  const fetchSingleGenre = async (buttonKey) => {
+    try {
+      const response = await fetch("/api/v1/food_genres/random");
+      const data = await response.json();
+      
+      if (data.error) {
+        console.error("API Error:", data.error);
+        return null;
+      }
+      
+      if (isValidData(data)) {
+        return data;
+      } else {
+        console.warn("Invalid data received:", data);
+        return null;
+      }
+    } catch (err) {
+      console.error("Error fetching single genre:", err);
+      return null;
+    }
+  };
+
+  // 不正なデータを自動的に再取得する関数
+  const autoRetryInvalidData = async () => {
+    const maxRetries = 3;
+    let hasChanges = false;
+    
+    console.log("Auto retry check - current pair:", pair);
+    console.log("Auto retry counts:", autoRetryCount);
+    
+    for (let i = 0; i < pair.length; i++) {
+      const buttonKey = buttonKeys[i];
+      const currentData = pair[i];
+      
+      console.log(`Checking ${buttonKey}:`, currentData);
+      
+      if (currentData && !isValidData(currentData)) {
+        const retryCount = autoRetryCount[buttonKey] || 0;
+        
+        console.log(`${buttonKey} is invalid, retry count: ${retryCount}`);
+        
+        if (retryCount < maxRetries) {
+          console.log(`Auto retrying invalid data for ${buttonKey}, attempt ${retryCount + 1}`);
+          
+          const newData = await fetchSingleGenre(buttonKey);
+          console.log(`New data for ${buttonKey}:`, newData);
+          
+          if (newData && isValidData(newData)) {
+            console.log(`Successfully got valid data for ${buttonKey}:`, newData.name);
+            setPair(prev => {
+              const newPair = [...prev];
+              // 実際に変更があった場合のみ更新
+              if (JSON.stringify(newPair[i]) !== JSON.stringify(newData)) {
+                newPair[i] = newData;
+                console.log(`Updated pair for ${buttonKey}`);
+                return newPair;
+              } else {
+                console.log(`No change needed for ${buttonKey}`);
+                return prev;
+              }
+            });
+            hasChanges = true;
+          } else {
+            console.log(`Failed to get valid data for ${buttonKey}`);
+          }
+          
+          setAutoRetryCount(prev => ({
+            ...prev,
+            [buttonKey]: retryCount + 1
+          }));
+        } else {
+          console.log(`Max retries reached for ${buttonKey}`);
+        }
+      } else {
+        console.log(`${buttonKey} is valid or null`);
+      }
+    }
+    
+    console.log("Auto retry completed, hasChanges:", hasChanges);
+    return hasChanges;
+  };
+
+  // pairの変更を監視して、不正なデータがあれば自動的に再取得
+  useEffect(() => {
+    console.log("useEffect triggered - pair changed:", pair);
+    
+    // 前回と同じ値の場合はスキップ
+    if (JSON.stringify(prevPairRef.current) === JSON.stringify(pair)) {
+      console.log("Pair unchanged, skipping");
+      return;
+    }
+    
+    prevPairRef.current = pair;
+    
+    if (pair.length > 0) {
+      const hasInvalidData = pair.some(data => data && !isValidData(data));
+      
+      console.log("Has invalid data:", hasInvalidData);
+      
+      if (hasInvalidData) {
+        console.log("Setting up auto retry timer");
+        // 少し遅延を入れてから再取得（無限ループを防ぐ）
+        const timer = setTimeout(() => {
+          console.log("Auto retry timer fired");
+          autoRetryInvalidData();
+        }, 1000);
+        
+        return () => {
+          console.log("Clearing auto retry timer");
+          clearTimeout(timer);
+        };
+      } else {
+        console.log("No invalid data found, no retry needed");
+      }
+    }
+  }, [pair]);
+
+
+
   const fetchPair = async () => {
     setLoading(true);
     setError(null);
+    // 自動再試行回数をリセット
+    setAutoRetryCount({ left: 0, right: 0 });
+    
     try {
       const response = await fetch("/api/v1/food_genres/two_random");
       const data = await response.json();
 
+      if (data.error) {
+        setError(data.error);
+        return;
+      }
+
       if (Array.isArray(data) && data.length === 2) {
-        setPair(data);
+        // データの検証を行う
+        const validData = data.filter(isValidData);
+        
+        if (validData.length === 2) {
+          setPair(validData);
+        } else {
+          // 不正なデータがある場合は、個別に再取得を試みる
+          const newPair = [];
+          for (let i = 0; i < 2; i++) {
+            if (isValidData(data[i])) {
+              newPair[i] = data[i];
+            } else {
+              // 不正なデータの場合は再取得
+              const retryData = await fetchSingleGenre(buttonKeys[i]);
+              newPair[i] = retryData || data[i]; // 再取得に失敗した場合は元のデータを使用
+            }
+          }
+          setPair(newPair);
+        }
       } else {
         setError("ジャンルが取得できませんでした");
       }
@@ -415,7 +600,7 @@ const App = () => {
               ) : (
                 <>
                   {/* {loading && <Text>読み込み中...</Text>} */}
-                  {loading && <Spinner />}
+                  {/* リロードマークを削除 - ボタンに重ねて表示するため */}
 
                   {error && (
                     <Alert status="error">
@@ -425,61 +610,92 @@ const App = () => {
                     </Alert>
                   )}
 
-                  {!loading && !error && pair.length === 2 && (
-                    <>
-                      <HStack spacing={8} justify="center">
-                        {pair.map((genre) => (
-                          <MotionButton
-                            key={genre.id}
-                            colorScheme="teal"
-                            size="lg"
-                            onClick={() => handleSelect(genre)}
-                            minW="40%"
-                            p={6}
-                            style={{ userSelect: "none" }}
-                            whileTap={{ scale: 0.92 }}
-                            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                          >
-                            <VStack>
-                              <Text fontWeight="bold" fontSize="xl" style={{ userSelect: "none" }}>
-                                {genre.name}
-                              </Text>
-                              {genre.description && (
-                                <Text color={colorMode === "dark" ? "gray.300" : "gray.600"} fontSize="md" style={{ userSelect: "none" }}>
-                                  {genre.description}
-                                </Text>
-                              )}
-                            </VStack>
-                          </MotionButton>
-                        ))}
-                      </HStack>
-                      {/* ここに「どちらでもない」ボタンを追加 */}
-                      <Box textAlign="center" mt={4}>
+                  {/* ボタンは常に表示 */}
+                  <HStack spacing={8} justify="center" position="relative">
+                    {buttonKeys.map((key, index) => (
+                      <Box key={key} position="relative">
                         <MotionButton
-                          bg={colorMode === "dark" ? "gray.800" : "white"}
-                          color={colorMode === "dark" ? "white" : "gray.800"}
-                          borderColor={colorMode === "dark" ? "gray.600" : "gray.300"}
-                          borderWidth="1px"
-                          variant="outline"
-                          size="md"
-                          onClick={fetchPair}
+                          colorScheme="teal"
+                          size="lg"
+                          onClick={() => pair[index] && handleSelect(pair[index])}
+                          w="160px"
+                          h="80px"
+                          p={4}
                           style={{ userSelect: "none" }}
                           whileTap={{ scale: 0.92 }}
                           transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                          _hover={{
-                            bg: colorMode === "dark" ? "gray.700" : "gray.50",
-                            borderColor: colorMode === "dark" ? "gray.500" : "gray.400"
-                          }}
+                          isDisabled={!pair[index] || loading}
                         >
-                          どちらでもない
+                          <VStack spacing={1}>
+                            <Text 
+                              fontWeight="bold" 
+                              fontSize="lg" 
+                              style={{ userSelect: "none" }}
+                              noOfLines={2}
+                              textAlign="center"
+                            >
+                              {pair[index]?.name || "読み込み中..."}
+                            </Text>
+                            {pair[index]?.description && (
+                              <Text 
+                                color={colorMode === "dark" ? "gray.300" : "gray.600"} 
+                                fontSize="sm" 
+                                style={{ userSelect: "none" }}
+                                noOfLines={1}
+                                textAlign="center"
+                              >
+                                {pair[index].description}
+                              </Text>
+                            )}
+                          </VStack>
                         </MotionButton>
+                        {/* ローディングオーバーレイ */}
+                        {loading && (
+                          <Box
+                            position="absolute"
+                            top="50%"
+                            left="50%"
+                            transform="translate(-50%, -50%)"
+                            zIndex={10}
+                            bg="rgba(0, 0, 0, 0.5)"
+                            borderRadius="md"
+                            p={2}
+                          >
+                            <Spinner size="sm" color="white" />
+                          </Box>
+                        )}
                       </Box>
-                    </>
-                  )}
+                    ))}
+                  </HStack>
+                  
+                  {/* デバッグ情報 */}
+                  {/* <Box mt={4} p={2} bg="gray.100" borderRadius="md">
+                    <Text fontSize="sm">
+                      Debug: loading={loading.toString()}, error={error?.toString() || 'null'}, pair.length={pair.length}
+                    </Text>
+                  </Box> */}
 
-                  {!loading && !error && pair.length < 2 && (
-                    <Text style={{ userSelect: "none" }}>ジャンルが足りません</Text>
-                  )}
+                  {/* ここに「どちらでもない」ボタンを追加 */}
+                  <Box textAlign="center" mt={4}>
+                    <MotionButton
+                      bg={colorMode === "dark" ? "gray.800" : "white"}
+                      color={colorMode === "dark" ? "white" : "gray.800"}
+                      borderColor={colorMode === "dark" ? "gray.600" : "gray.300"}
+                      borderWidth="1px"
+                      variant="outline"
+                      size="md"
+                      onClick={fetchPair}
+                      style={{ userSelect: "none" }}
+                      whileTap={{ scale: 0.92 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                      _hover={{
+                        bg: colorMode === "dark" ? "gray.700" : "gray.50",
+                        borderColor: colorMode === "dark" ? "gray.500" : "gray.400"
+                      }}
+                    >
+                      どちらでもない
+                    </MotionButton>
+                  </Box>
 
                   {/* 選択履歴の表示（回数順） */}
                   {sortedHistory.length > 0 && (
