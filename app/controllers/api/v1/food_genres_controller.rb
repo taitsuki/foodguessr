@@ -52,7 +52,7 @@ end
   def valid_food_genre?(genre)
     return false unless genre
     return false if genre.name.blank?
-    invalid_patterns = %w[MyString MyText null undefined]
+    invalid_patterns = ['MyString', 'MyText', 'null', 'undefined']
     return false if invalid_patterns.any? { |pattern| genre.name.include?(pattern) }
     if genre.description.present?
       return false if invalid_patterns.any? { |pattern| genre.description.include?(pattern) }
