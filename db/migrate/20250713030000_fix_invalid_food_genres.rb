@@ -2,10 +2,8 @@ class FixInvalidFoodGenres < ActiveRecord::Migration[8.0]
   def up
     # MyString、MyTextなどの不正なデータを削除
     FoodGenre.where("name LIKE '%MyString%' OR name LIKE '%MyText%' OR name IS NULL OR name = ''").destroy_all
-
     # descriptionが不正なデータも修正
     FoodGenre.where("description LIKE '%MyString%' OR description LIKE '%MyText%'").update_all(description: nil)
-
     # データが存在しない場合は、基本的なデータを追加
     if FoodGenre.count == 0
       FoodGenre.create(name: "寿司")
@@ -34,8 +32,8 @@ class FixInvalidFoodGenres < ActiveRecord::Migration[8.0]
       FoodGenre.create(name: "丼もの")
     end
   end
-
   def down
     # このマイグレーションは元に戻せない（データ削除のため）
   end
 end
+
