@@ -1,4 +1,4 @@
-# FoodGuessr
+# FoodGuessr（外食何食べる？）
 
 Rails 8.0.2 と esbuild を使用した Web アプリケーションです。
 
