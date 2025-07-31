@@ -31,4 +31,3 @@ FoodGenre.create(name: "サンドイッチ")
 FoodGenre.create(name: "カレー")
 FoodGenre.create(name: "チキン")
 FoodGenre.create(name: "丼もの")
-

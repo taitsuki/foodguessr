@@ -5,10 +5,10 @@ Rails.application.routes.draw do
         collection do
           get :random
           get :two_random
-end
-end
-end
-end
+        end
+      end
+    end
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   # get "home/index" # この行はあってもなくても良いですが、下のroot設定があれば不要です
   # トップページ("/")にアクセスされたら、HomeControllerのindexアクションを呼び出す
@@ -17,4 +17,3 @@ end
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 end
-

@@ -1,3 +1,2 @@
 class FoodGenre < ApplicationRecord
 end
-
