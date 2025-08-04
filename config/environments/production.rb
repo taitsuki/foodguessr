@@ -56,6 +56,7 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
   # Enable DNS rebinding protection and other `Host` header attacks.
+  config.hosts << "foodguessr.onrender.com"
   # config.hosts = [
   #   "example.com",     # Allow requests from example.com
   #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
