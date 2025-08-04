@@ -23,6 +23,13 @@ RUN bundle install
 # アプリケーションのソースコードをコピー
 COPY . .
 
+# entrypoint.shに実行権限を付与
+COPY bin/entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# エントリーポイントを設定
+ENTRYPOINT ["entrypoint.sh"]
+
 # Railsの実行可能ファイルを確実にインストール
 RUN bundle exec rails --version
 
