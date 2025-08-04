@@ -29,5 +29,5 @@ RUN bundle exec rails --version
 # ポート3000を公開
 EXPOSE 3000
 
-# 開発環境用のコマンド（docker-composeで上書きされる）
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+# 本番環境用のWebサーバーを起動
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
