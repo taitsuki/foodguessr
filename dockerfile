@@ -36,5 +36,8 @@ RUN bundle exec rails --version
 # ポート3000を公開
 EXPOSE 3000
 
+# 環境変数を設定
+ENV RAILS_ENV=production
+
 # 本番環境用のWebサーバーを起動
 CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
