@@ -20,8 +20,16 @@ COPY Gemfile.lock ./
 RUN gem install bundler
 RUN bundle install
 
+# package.jsonとpackage-lock.jsonをコピーしてnpmパッケージをインストール
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm install
+
 # アプリケーションのソースコードをコピー
 COPY . .
+
+# 本番環境用にアセットをプリコンパイル
+RUN RAILS_ENV=production bundle exec rails assets:precompile
 
 # entrypoint.shに実行権限を付与
 COPY bin/entrypoint.sh /usr/local/bin/
