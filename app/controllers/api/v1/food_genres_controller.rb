@@ -42,19 +42,8 @@ class Api::V1::FoodGenresController < ApplicationController
     nil
   end
 
-  # この関数に問題がありそう
   def find_two_valid_food_genres
-    valid_genres = []
-    retry_count = 0
-    max_retries = 10
-    while valid_genres.length < 2 && retry_count < max_retries
-      genre = FoodGenre.order("RANDOM()").first
-      if valid_food_genre?(genre) && !valid_genres.include?(genre)
-        valid_genres << genre
-      end
-      retry_count += 1
-    end
-    valid_genres
+    FoodGenre.all.filter { |genre| valid_food_genre?(genre) }.sample(2)
   end
 
   def valid_food_genre?(genre)
