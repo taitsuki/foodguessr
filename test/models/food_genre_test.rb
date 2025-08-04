@@ -4,4 +4,3 @@ class FoodGenreTest < ActiveSupport::TestCase
   #   assert true
   # end
 end
-

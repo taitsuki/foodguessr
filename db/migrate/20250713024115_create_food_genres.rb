@@ -4,7 +4,6 @@ class CreateFoodGenres < ActiveRecord::Migration[8.0]
       t.string :name
       t.text :description
       t.timestamps
+    end
+  end
 end
-end
-end
-
