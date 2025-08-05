@@ -28,6 +28,7 @@ services:
       RAILS_ENV: development
       RAILS_SERVE_STATIC_FILES: "true"
       BUNDLE_PATH: "/usr/local/bundle"
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
     volumes:
       - .:/app
       - bundle_cache:/usr/local/bundle
@@ -54,4 +55,3 @@ volumes:
   postgres_data:
   bundle_cache:
   redis_data:
-
