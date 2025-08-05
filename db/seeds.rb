@@ -1,33 +1,13 @@
 # This file should ensure the existence of records required to run the application in every environment (production,
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-# Example:
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
-# FoodGenre.delete_all # DB内容を削除しリセット
-# ActiveRecord::Base.connection.reset_pk_sequence!('food_genres') # シーケンスをリセットし、id:1スタートに
-FoodGenre.create(name: "寿司")
-FoodGenre.create(name: "天ぷら")
-FoodGenre.create(name: "そば")
-FoodGenre.create(name: "うどん")
-FoodGenre.create(name: "ラーメン")
-FoodGenre.create(name: "定食")
-FoodGenre.create(name: "焼鳥")
-FoodGenre.create(name: "お好み焼き")
-FoodGenre.create(name: "たこ焼き")
-FoodGenre.create(name: "とんかつ")
-FoodGenre.create(name: "パスタ")
-FoodGenre.create(name: "ピザ")
-FoodGenre.create(name: "ハンバーガー")
-FoodGenre.create(name: "ステーキ")
-FoodGenre.create(name: "ハンバーグ")
-FoodGenre.create(name: "炒飯")
-FoodGenre.create(name: "餃子")
-FoodGenre.create(name: "焼肉")
-FoodGenre.create(name: "スイーツ")
-FoodGenre.create(name: "パン")
-FoodGenre.create(name: "サンドイッチ")
-FoodGenre.create(name: "カレー")
-FoodGenre.create(name: "チキン")
-FoodGenre.create(name: "丼もの")
+
+# データを重複させずに作成するため、find_or_create_by! を使用します。
+# これにより、このスクリプトを何度実行しても安全になります。
+[
+  "寿司", "天ぷら", "そば", "うどん", "ラーメン", "定食", "焼鳥", "お好み焼き", "たこ焼き",
+  "とんかつ", "パスタ", "ピザ", "ハンバーガー", "ステーキ", "ハンバーグ", "炒飯", "餃子",
+  "焼肉", "スイーツ", "パン", "サンドイッチ", "カレー", "チキン", "丼もの"
+].each do |genre_name|
+  FoodGenre.find_or_create_by!(name: genre_name)
+end
